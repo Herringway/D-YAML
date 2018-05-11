@@ -90,10 +90,10 @@ void testEmitterOnData(string dataFilename, string canonicalFilename) @system
     {
         writeln(dataFilename);
         writeln("ORIGINAL:\n", readText(dataFilename));
-        writeln("OUTPUT:\n", cast(string)emitStream.data);
+        writeln("OUTPUT:\n", emitStream.toString);
     }
 
-    auto loader2        = Loader.fromBuffer(emitStream.data);
+    auto loader2        = Loader.fromBuffer(emitStream.toBytes);
     loader2.name        = "TEST";
     loader2.constructor = new Constructor;
     loader2.resolver    = new Resolver;
@@ -120,9 +120,9 @@ void testEmitterOnCanonical(string canonicalFilename) @system
         static if(verbose)
         {
             writeln("OUTPUT (canonical=", canonical, "):\n",
-                    cast(string)emitStream.data);
+                    emitStream.toString);
         }
-        auto loader2        = Loader.fromBuffer(emitStream.data);
+        auto loader2        = Loader.fromBuffer(emitStream.toBytes);
         loader2.name        = "TEST";
         loader2.constructor = new Constructor;
         loader2.resolver    = new Resolver;
@@ -178,9 +178,9 @@ void testEmitterStyles(string dataFilename, string canonicalFilename) @system
                 {
                     writeln("OUTPUT (", filename, ", ", to!string(flowStyle), ", ",
                             to!string(style), ")");
-                    writeln(emitStream.data);
+                    writeln(emitStream.toString);
                 }
-                auto loader2        = Loader.fromBuffer(emitStream.data);
+                auto loader2        = Loader.fromBuffer(emitStream.toBytes);
                 loader2.name        = "TEST";
                 loader2.constructor = new Constructor;
                 loader2.resolver    = new Resolver;
