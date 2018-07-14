@@ -1,4 +1,3 @@
-
 //          Copyright Ferdinand Majerech 2011-2014
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
@@ -6,83 +5,89 @@
 
 module dyaml.test.errors;
 
-
-version(unittest)
+version (unittest)
 {
 
-import std.file;
+    import std.file;
 
-import dyaml.test.common;
+    import dyaml.test.common;
 
-
-/// Loader error unittest from file stream.
-///
-/// Params:  errorFilename = File name to read from.
-void testLoaderError(string errorFilename) @safe
-{
-    Node[] nodes;
-    try { nodes = Loader.fromFile(errorFilename).loadAll(); }
-    catch(YAMLException e)
+    /// Loader error unittest from file stream.
+    ///
+    /// Params:  errorFilename = File name to read from.
+    void testLoaderError(string errorFilename) @safe
     {
-        printException(e);
-        return;
+        Node[] nodes;
+        try
+        {
+            nodes = Loader.fromFile(errorFilename).loadAll();
+        }
+        catch (YAMLException e)
+        {
+            printException(e);
+            return;
+        }
+        assert(false, "Expected an exception");
     }
-    assert(false, "Expected an exception");
-}
 
-/// Loader error unittest from string.
-///
-/// Params:  errorFilename = File name to read from.
-void testLoaderErrorString(string errorFilename) @safe
-{
-    try
+    /// Loader error unittest from string.
+    ///
+    /// Params:  errorFilename = File name to read from.
+    void testLoaderErrorString(string errorFilename) @safe
     {
-        auto nodes = Loader.fromFile(errorFilename).loadAll();
+        try
+        {
+            auto nodes = Loader.fromFile(errorFilename).loadAll();
+        }
+        catch (YAMLException e)
+        {
+            printException(e);
+            return;
+        }
+        assert(false, "Expected an exception");
     }
-    catch(YAMLException e)
-    {
-        printException(e);
-        return;
-    }
-    assert(false, "Expected an exception");
-}
 
-/// Loader error unittest from filename.
-///
-/// Params:  errorFilename = File name to read from.
-void testLoaderErrorFilename(string errorFilename) @safe
-{
-    try { auto nodes = Loader.fromFile(errorFilename).loadAll(); }
-    catch(YAMLException e)
+    /// Loader error unittest from filename.
+    ///
+    /// Params:  errorFilename = File name to read from.
+    void testLoaderErrorFilename(string errorFilename) @safe
     {
-        printException(e);
-        return;
+        try
+        {
+            auto nodes = Loader.fromFile(errorFilename).loadAll();
+        }
+        catch (YAMLException e)
+        {
+            printException(e);
+            return;
+        }
+        assert(false, "testLoaderErrorSingle(" ~ ", " ~ errorFilename ~ ") Expected an exception");
     }
-    assert(false, "testLoaderErrorSingle(" ~ ", " ~ errorFilename ~
-                 ") Expected an exception");
-}
 
-/// Loader error unittest loading a single document from a file.
-///
-/// Params:  errorFilename = File name to read from.
-void testLoaderErrorSingle(string errorFilename) @safe
-{
-    try { auto nodes = Loader.fromFile(errorFilename).load(); }
-    catch(YAMLException e)
+    /// Loader error unittest loading a single document from a file.
+    ///
+    /// Params:  errorFilename = File name to read from.
+    void testLoaderErrorSingle(string errorFilename) @safe
     {
-        printException(e);
-        return;
+        try
+        {
+            auto nodes = Loader.fromFile(errorFilename).load();
+        }
+        catch (YAMLException e)
+        {
+            printException(e);
+            return;
+        }
+        assert(false, "Expected an exception");
     }
-    assert(false, "Expected an exception");
-}
 
-@safe unittest
-{
-    printProgress("D:YAML Errors unittest");
-    run("testLoaderError",         &testLoaderError,         ["loader-error"]);
-    run("testLoaderErrorString",   &testLoaderErrorString,   ["loader-error"]);
-    run("testLoaderErrorFilename", &testLoaderErrorFilename, ["loader-error"]);
-    run("testLoaderErrorSingle",   &testLoaderErrorSingle,   ["single-loader-error"]);
-}
+    @safe unittest
+    {
+        printProgress("D:YAML Errors unittest");
+        run("testLoaderError", &testLoaderError, ["loader-error"]);
+        run("testLoaderErrorString", &testLoaderErrorString, ["loader-error"]);
+        run("testLoaderErrorFilename", &testLoaderErrorFilename, ["loader-error"]);
+        run("testLoaderErrorSingle", &testLoaderErrorSingle, ["single-loader-error"]);
+    }
 
 } // version(unittest)

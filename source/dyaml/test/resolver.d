@@ -1,4 +1,3 @@
-
 //          Copyright Ferdinand Majerech 2011.
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
@@ -6,51 +5,48 @@
 
 module dyaml.test.resolver;
 
-
-version(unittest)
+version (unittest)
 {
 
-import std.file;
-import std.string;
+    import std.file;
+    import std.string;
 
-import dyaml.test.common;
+    import dyaml.test.common;
 
-
-/**
+    /**
  * Implicit tag resolution unittest.
  *
  * Params:  dataFilename   = File with unittest data.
  *          detectFilename = Dummy filename used to specify which data filenames to use.
  */
-void testImplicitResolver(string dataFilename, string detectFilename) @safe
-{
-    string correctTag;
-    Node node;
-
-    scope(failure)
+    void testImplicitResolver(string dataFilename, string detectFilename) @safe
     {
-        if(true)
+        string correctTag;
+        Node node;
+
+        scope (failure)
         {
-            writeln("Correct tag: ", correctTag);
-            writeln("Node: ", node.debugString);
+            if (true)
+            {
+                writeln("Correct tag: ", correctTag);
+                writeln("Node: ", node.debugString);
+            }
+        }
+
+        correctTag = readText(detectFilename).strip();
+        node = Loader.fromFile(dataFilename).load();
+        assert(node.isSequence);
+        foreach (ref Node scalar; node)
+        {
+            assert(scalar.isScalar);
+            assert(scalar.tag == correctTag);
         }
     }
 
-    correctTag = readText(detectFilename).strip();
-    node = Loader.fromFile(dataFilename).load();
-    assert(node.isSequence);
-    foreach(ref Node scalar; node)
+    @safe unittest
     {
-        assert(scalar.isScalar);
-        assert(scalar.tag == correctTag);
+        printProgress("D:YAML Resolver unittest");
+        run("testImplicitResolver", &testImplicitResolver, ["data", "detect"]);
     }
-}
-
-
-@safe unittest
-{
-    printProgress("D:YAML Resolver unittest");
-    run("testImplicitResolver", &testImplicitResolver, ["data", "detect"]);
-}
 
 } // version(unittest)
