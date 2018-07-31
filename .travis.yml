@@ -9,6 +9,17 @@ branches:
 os:
   - linux
   - osx
+d:
+  - dmd
+  - dmd-beta
+  - dmd-nightly
+  - ldc
+  - ldc-beta
+script:
+  - dub build
+  - dub test --build=unittest-cov
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
 
 jobs:
   include:
@@ -24,12 +35,6 @@ jobs:
       script:
         - meson build && ninja -j8 -C build; fi
         - ninja -j8 -C build test -v; fi
-      d: &compilers
-        - dmd
-        - dmd-beta
-        - dmd-nightly
-        - ldc
-        - ldc-beta
     - stage: dub examples
       script:
         - "dub build dyaml:benchmark"
@@ -40,12 +45,4 @@ jobs:
         - "dub build dyaml:tojson"
         - "dub build dyaml:yaml_gen"
         - "dub build dyaml:yaml_stats"
-      d: *compilers
-    - stage: dub test
-      script:
-        - dub build
-        - dub test --build=unittest-cov
-      d: *compilers
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
 ...
