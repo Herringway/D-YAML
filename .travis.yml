@@ -40,7 +40,7 @@ jobs:
         - "dub build dyaml:tojson"
         - "dub build dyaml:yaml_gen"
         - "dub build dyaml:yaml_stats"
-        d: *compilers
+      d: *compilers
     - stage: dub test
       script:
         - dub build
