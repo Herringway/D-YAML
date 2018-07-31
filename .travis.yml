@@ -35,6 +35,7 @@ jobs:
       script:
         - meson build && ninja -j8 -C build; fi
         - ninja -j8 -C build test -v; fi
+      after_success: skip
     - stage: dub examples
       script:
         - "dub build dyaml:benchmark"
@@ -45,4 +46,5 @@ jobs:
         - "dub build dyaml:tojson"
         - "dub build dyaml:yaml_gen"
         - "dub build dyaml:yaml_stats"
+      after_success: skip
 ...
