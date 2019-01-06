@@ -9,12 +9,18 @@ branches:
 os:
   - linux
   - osx
+
 d:
   - dmd
   - dmd-beta
   - dmd-nightly
   - ldc
   - ldc-beta
+
+matrix:
+  allow_failures:
+    - d: dmd-nightly
+
 script:
   - dub build
   - dub test --build=unittest-cov
