@@ -33,8 +33,8 @@ jobs:
       before_script:
         - export PATH=$PATH:$PWD/.ntmp
       script:
-        - meson build && ninja -j8 -C build; fi
-        - ninja -j8 -C build test -v; fi
+        - meson build && ninja -j8 -C build
+        - ninja -j8 -C build test -v
       after_success: skip
     - stage: dub examples
       script:
