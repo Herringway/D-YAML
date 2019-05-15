@@ -234,19 +234,9 @@ struct Emitter(Range, CharType) if (isOutputRange!(Range, CharType))
         {
             try
             {
-                static if(is(CharType == char))
+                foreach (CharType chr; str)
                 {
-                    copy(str, stream_);
-                }
-                static if(is(CharType == wchar))
-                {
-                    const buffer = to!wstring(str);
-                    copy(buffer, stream_);
-                }
-                static if(is(CharType == dchar))
-                {
-                    const buffer = to!dstring(str);
-                    copy(buffer, stream_);
+                    stream_.put(chr);
                 }
             }
             catch(Exception e)
