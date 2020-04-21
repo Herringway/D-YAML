@@ -23,7 +23,6 @@ import std.utf;
 
 import dyaml.escapes;
 import dyaml.exception;
-import dyaml.queue;
 import dyaml.reader;
 import dyaml.style;
 import dyaml.token;
@@ -133,7 +132,7 @@ struct Scanner
         Appender!(int[]) indents_;
 
         /// Processed tokens not yet emitted. Used as a queue.
-        Queue!Token tokens_;
+        Token[] tokens_;
 
         /// Number of tokens emitted through the getToken method.
         uint tokensTaken_;
@@ -163,14 +162,14 @@ struct Scanner
         void popFront() @safe
         {
             ++tokensTaken_;
-            tokens_.pop();
+            tokens_.popFront();
         }
 
         /// Return the current token
         const(Token) front() @safe
         {
             enforce(!empty, "No token left to peek");
-            return tokens_.peek();
+            return tokens_.front;
         }
 
         /// Return whether there are any more tokens left.
@@ -362,7 +361,7 @@ struct Scanner
                 indent_ = indents_.data.back;
                 assert(indents_.data.length);
                 indents_.shrinkTo(indents_.data.length - 1);
-                tokens_.push(blockEndToken(reader_.mark, reader_.mark));
+                tokens_ ~= blockEndToken(reader_.mark, reader_.mark);
             }
         }
 
@@ -383,7 +382,7 @@ struct Scanner
         /// Add STREAM-START token.
         void fetchStreamStart() @safe nothrow
         {
-            tokens_.push(streamStartToken(reader_.mark, reader_.mark, reader_.encoding));
+            tokens_ ~= streamStartToken(reader_.mark, reader_.mark, reader_.encoding);
         }
 
         ///Add STREAM-END token.
@@ -395,7 +394,7 @@ struct Scanner
             allowSimpleKey_ = false;
             possibleSimpleKeys_.destroy;
 
-            tokens_.push(streamEndToken(reader_.mark, reader_.mark));
+            tokens_ ~= streamEndToken(reader_.mark, reader_.mark);
             done_ = true;
         }
 
@@ -409,7 +408,7 @@ struct Scanner
             allowSimpleKey_ = false;
 
             auto directive = scanDirective();
-            tokens_.push(directive);
+            tokens_ ~= directive;
         }
 
         /// Add DOCUMENT-START or DOCUMENT-END token.
@@ -424,7 +423,7 @@ struct Scanner
 
             Mark startMark = reader_.mark;
             reader_.forward(3);
-            tokens_.push(simpleToken!id(startMark, reader_.mark));
+            tokens_ ~= simpleToken!id(startMark, reader_.mark);
         }
 
         /// Aliases to add DOCUMENT-START or DOCUMENT-END token.
@@ -442,7 +441,7 @@ struct Scanner
 
             Mark startMark = reader_.mark;
             reader_.forward();
-            tokens_.push(simpleToken!id(startMark, reader_.mark));
+            tokens_ ~= simpleToken!id(startMark, reader_.mark);
         }
 
         /// Aliases to add FLOW-SEQUENCE-START or FLOW-MAPPING-START token.
@@ -460,7 +459,7 @@ struct Scanner
 
             Mark startMark = reader_.mark;
             reader_.forward();
-            tokens_.push(simpleToken!id(startMark, reader_.mark));
+            tokens_ ~= simpleToken!id(startMark, reader_.mark);
         }
 
         /// Aliases to add FLOW-SEQUENCE-START or FLOW-MAPPING-START token/
@@ -477,7 +476,7 @@ struct Scanner
 
             Mark startMark = reader_.mark;
             reader_.forward();
-            tokens_.push(flowEntryToken(startMark, reader_.mark));
+            tokens_ ~= flowEntryToken(startMark, reader_.mark);
         }
 
         /// Additional checks used in block context in fetchBlockEntry and fetchKey.
@@ -492,7 +491,7 @@ struct Scanner
 
             if(addIndent(reader_.column))
             {
-                tokens_.push(simpleToken!id(reader_.mark, reader_.mark));
+                tokens_ ~= simpleToken!id(reader_.mark, reader_.mark);
             }
         }
 
@@ -511,7 +510,7 @@ struct Scanner
 
             Mark startMark = reader_.mark;
             reader_.forward();
-            tokens_.push(blockEntryToken(startMark, reader_.mark));
+            tokens_ ~= blockEntryToken(startMark, reader_.mark);
         }
 
         /// Add KEY token. Might add BLOCK-MAPPING-START in the process.
@@ -526,7 +525,7 @@ struct Scanner
 
             Mark startMark = reader_.mark;
             reader_.forward();
-            tokens_.push(keyToken(startMark, reader_.mark));
+            tokens_ ~= keyToken(startMark, reader_.mark);
         }
 
         /// Add VALUE token. Might add KEY and/or BLOCK-MAPPING-START in the process.
@@ -545,12 +544,12 @@ struct Scanner
 
                 // Add KEY.
                 // Manually inserting since tokens are immutable (need linked list).
-                tokens_.insert(keyToken(keyMark, keyMark), idx);
+                tokens_.insertInPlace(idx, keyToken(keyMark, keyMark));
 
                 // If this key starts a new block mapping, we need to add BLOCK-MAPPING-START.
                 if(flowLevel_ == 0 && addIndent(key.column))
                 {
-                    tokens_.insert(blockMappingStartToken(keyMark, keyMark), idx);
+                    tokens_.insertInPlace(idx, blockMappingStartToken(keyMark, keyMark));
                 }
 
                 // There cannot be two simple keys in a row.
@@ -567,7 +566,7 @@ struct Scanner
                 // BLOCK-MAPPING-START. It'll be detected as an error later by the parser.
                 if(flowLevel_ == 0 && addIndent(reader_.column))
                 {
-                    tokens_.push(blockMappingStartToken(reader_.mark, reader_.mark));
+                    tokens_ ~= blockMappingStartToken(reader_.mark, reader_.mark);
                 }
 
                 // Reset possible simple key on the current level.
@@ -579,7 +578,7 @@ struct Scanner
             // Add VALUE.
             Mark startMark = reader_.mark;
             reader_.forward();
-            tokens_.push(valueToken(startMark, reader_.mark));
+            tokens_ ~= valueToken(startMark, reader_.mark);
         }
 
         /// Add ALIAS or ANCHOR token.
@@ -592,7 +591,7 @@ struct Scanner
             allowSimpleKey_ = false;
 
             auto anchor = scanAnchor(id);
-            tokens_.push(anchor);
+            tokens_ ~= anchor;
         }
 
         /// Aliases to add ALIAS or ANCHOR token.
@@ -607,7 +606,7 @@ struct Scanner
             //No simple keys after TAG.
             allowSimpleKey_ = false;
 
-            tokens_.push(scanTag());
+            tokens_ ~= scanTag();
         }
 
         /// Add block SCALAR token.
@@ -620,7 +619,7 @@ struct Scanner
             allowSimpleKey_ = true;
 
             auto blockScalar = scanBlockScalar(style);
-            tokens_.push(blockScalar);
+            tokens_ ~= blockScalar;
         }
 
         /// Aliases to add literal or folded block scalar.
@@ -637,7 +636,7 @@ struct Scanner
 
             // Scan and add SCALAR.
             auto scalar = scanFlowScalar(quotes);
-            tokens_.push(scalar);
+            tokens_ ~= scalar;
         }
 
         /// Aliases to add single or double quoted block scalar.
@@ -655,7 +654,7 @@ struct Scanner
             auto plain = scanPlain();
 
             // Scan and add SCALAR. May change allowSimpleKey_
-            tokens_.push(plain);
+            tokens_ ~= plain;
         }
 
     pure:

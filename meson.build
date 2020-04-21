@@ -23,7 +23,6 @@ dyaml_src = [
     'source/dyaml/node.d',
     'source/dyaml/package.d',
     'source/dyaml/parser.d',
-    'source/dyaml/queue.d',
     'source/dyaml/reader.d',
     'source/dyaml/representer.d',
     'source/dyaml/resolver.d',

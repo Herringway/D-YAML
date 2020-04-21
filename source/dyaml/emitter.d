@@ -28,7 +28,6 @@ import dyaml.escapes;
 import dyaml.event;
 import dyaml.exception;
 import dyaml.linebreak;
-import dyaml.queue;
 import dyaml.style;
 import dyaml.tagdirective;
 
@@ -86,7 +85,7 @@ struct Emitter(Range, CharType) if (isOutputRange!(Range, CharType))
         EmitterFunction state_;
 
         ///Event queue.
-        Queue!Event events_;
+        Event[] events_;
         ///Event we're currently emitting.
         Event event_;
 
@@ -182,10 +181,11 @@ struct Emitter(Range, CharType) if (isOutputRange!(Range, CharType))
         ///Emit an event.
         void emit(Event event) @safe
         {
-            events_.push(event);
+            events_ ~= event;
             while(!needMoreEvents())
             {
-                event_ = events_.pop();
+                event_ = events_.front;
+                events_.popFront();
                 callNext();
                 event_.destroy();
             }
@@ -242,7 +242,7 @@ struct Emitter(Range, CharType) if (isOutputRange!(Range, CharType))
         {
             if(events_.length == 0){return true;}
 
-            const event = events_.peek();
+            const event = events_.front;
             if(event.id == EventID.documentStart){return needEvents(1);}
             if(event.id == EventID.sequenceStart){return needEvents(2);}
             if(event.id == EventID.mappingStart) {return needEvents(3);}
@@ -255,7 +255,7 @@ struct Emitter(Range, CharType) if (isOutputRange!(Range, CharType))
         {
             int level;
 
-            foreach(const event; events_.range)
+            foreach(const event; events_)
             {
                 if(event.id.among!(EventID.documentStart, EventID.sequenceStart, EventID.mappingStart)) {++level;}
                 else if(event.id.among!(EventID.documentEnd, EventID.sequenceEnd, EventID.mappingEnd)) {--level;}
@@ -652,14 +652,14 @@ struct Emitter(Range, CharType) if (isOutputRange!(Range, CharType))
         bool checkEmptySequence() const @safe pure nothrow
         {
             return event_.id == EventID.sequenceStart && events_.length > 0
-                   && events_.peek().id == EventID.sequenceEnd;
+                   && events_.front.id == EventID.sequenceEnd;
         }
 
         ///Check if an empty mapping is next.
         bool checkEmptyMapping() const @safe pure nothrow
         {
             return event_.id == EventID.mappingStart && events_.length > 0
-                   && events_.peek().id == EventID.mappingEnd;
+                   && events_.front.id == EventID.mappingEnd;
         }
 
         ///Check if an empty document is next.
@@ -670,7 +670,7 @@ struct Emitter(Range, CharType) if (isOutputRange!(Range, CharType))
                 return false;
             }
 
-            const event = events_.peek();
+            const event = events_.front;
             const emptyScalar = event.id == EventID.scalar && (event.anchor is null) &&
                                 (event.tag is null) && event.implicit && event.value == "";
             return emptyScalar;
