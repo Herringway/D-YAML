@@ -43,7 +43,7 @@ module dyaml.test.representer;
             assert(expectedNodes.length == readNodes.length);
             foreach (n; 0 .. expectedNodes.length)
             {
-                assertNodesEqual(expectedNodes[n], readNodes[n]);
+                assertNodesEqual(readNodes[n], expectedNodes[n]);
             }
         }
     }
