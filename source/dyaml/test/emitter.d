@@ -47,7 +47,7 @@ module dyaml.test.emitter;
         auto loader2 = Loader.fromString(emitStream.data);
         loader2.name = "TEST";
         auto newEvents = loader2.parse();
-        assertEventsEqual(events, newEvents);
+        assertEventsEqual(dataFilename, events, newEvents);
     }
     /**
     Test emitter by getting events from parsing a canonical YAML file, emitting
@@ -69,7 +69,7 @@ module dyaml.test.emitter;
             auto loader2 = Loader.fromString(emitStream.data);
             loader2.name = "TEST";
             auto newEvents = loader2.parse();
-            assertEventsEqual(events, newEvents);
+            assertEventsEqual(canonicalFilename, events, newEvents);
         }
     }
     /**
@@ -121,7 +121,7 @@ module dyaml.test.emitter;
                     auto loader2 = Loader.fromString(emitStream.data);
                     loader2.name = "TEST";
                     auto newEvents = loader2.parse();
-                    assertEventsEqual(events, newEvents);
+                    assertEventsEqual(canonicalFilename, events, newEvents);
                 }
             }
         }

@@ -17,8 +17,10 @@ import std.algorithm;
 import std.array;
 import std.conv;
 import std.file;
+import std.format;
 import std.range;
 import std.path;
+import std.stdio;
 import std.traits;
 import std.typecons;
 
@@ -83,8 +85,11 @@ ubyte[] readData(string filename) @trusted
 }
 void assertNodesEqual(const scope Node gotNode, const scope Node expectedNode) @safe
 {
-    import std.format : format;
-    assert(gotNode == expectedNode, format!"got %s, expected %s"(gotNode.debugString, expectedNode.debugString));
+    if (gotNode != expectedNode)
+    {
+        writeln(prettyDifferencePrinter(gotNode.debugString, expectedNode.debugString));
+        assert(0, "Test failure");
+    }
 }
 
 /**
@@ -140,12 +145,17 @@ Params:
     events1 = First event array to compare.
     events2 = Second event array to compare.
 */
-void assertEventsEqual(T, U)(T events1, U events2)
+void assertEventsEqual(T, U)(string name, T events1, U events2)
 if (isInputRange!T && isInputRange!U && is(ElementType!T == Event) && is(ElementType!U == Event))
 {
     auto events1Copy = events1.array;
     auto events2Copy = events2.array;
-    assert(compareEvents(events1Copy, events2Copy), text("Got '", events1Copy, "', expected '", events2Copy, "'"));
+    if (!compareEvents(events1Copy, events2Copy))
+    {
+        enum eventFormat = "%-(%s\n%)";
+        writeln(prettyDifferencePrinter(events1Copy.format!eventFormat, events2Copy.format!eventFormat));
+        assert(0, name ~ ": Test failure");
+    }
 }
 
 private:
@@ -218,6 +228,47 @@ void execute(D)(D testFunction, string[] filenames)
     F parameters;
     stringsToTuple!(F.length - 1, F)(parameters, filenames);
     testFunction(parameters);
+}
+
+auto prettyDifferencePrinter(string expected, string got) @safe
+{
+    struct Result
+    {
+        void toString(W)(ref W writer) const
+        {
+            import std.format : formattedWrite;
+            import std.range : put;
+            import std.string : lineSplitter;
+            size_t minWidth = 10;
+            foreach (line; chain(expected.lineSplitter, got.lineSplitter))
+            {
+                if (line.length + 1 > minWidth)
+                {
+                    minWidth = line.length + 1;
+                }
+            }
+            void writeSideBySide(string a, string b)
+            {
+                writer.formattedWrite!"%s%-(%s%)%s"(a, " ".repeat(minWidth - a.length), b);
+            }
+            writeSideBySide("Expected", "Got");
+            put(writer, "\n");
+            foreach (line1, line2; zip(expected.lineSplitter, got.lineSplitter))
+            {
+                if (line1 == line2)
+                {
+                    put(writer, "\033[32;1m");
+                }
+                else
+                {
+                    put(writer, "\033[31;1m");
+                }
+                writeSideBySide(line1, line2);
+                put(writer, "\033[0m\n");
+            }
+        }
+    }
+    return Result();
 }
 
 } // version(unittest)
