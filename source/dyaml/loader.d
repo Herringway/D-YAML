@@ -155,9 +155,9 @@ struct Loader
 
 
         /// Set stream _name. Used in debugging messages.
-        void name(string name) pure @safe nothrow @nogc
+        ref inout(string) name() inout @safe return pure nothrow @nogc
         {
-            composer_.name = name;
+            return composer_.name;
         }
 
         /// Specify custom Resolver to use.

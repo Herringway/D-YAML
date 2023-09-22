@@ -187,10 +187,10 @@ struct Scanner
             return tokens_.empty;
         }
 
-        /// Set file name.
-        void name(string name) @safe pure nothrow @nogc
+        /// Get file name.
+        ref inout(string) name() @safe inout return pure nothrow @nogc
         {
-            reader_.name = name;
+            return reader_.name;
         }
 
     private:

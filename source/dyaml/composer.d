@@ -101,10 +101,10 @@ struct Composer
             return composeDocument();
         }
 
-        /// Set file name.
-        void name(string name) @safe pure nothrow @nogc
+        /// Get file name.
+        ref inout(string) name() inout @safe return pure nothrow @nogc
         {
-            parser_.name = name;
+            return parser_.name;
         }
 
         /// Get resolver

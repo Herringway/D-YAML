@@ -173,10 +173,9 @@ final class Parser
             ensureState();
         }
 
-        /// Set file name.
-        void name(string name) @safe pure nothrow @nogc
-        {
-            scanner_.name = name;
+        /// Get file name.
+        ref inout(string) name() inout @safe return pure nothrow @nogc {
+            return scanner_.name;
         }
 
     private:
