@@ -51,11 +51,11 @@ struct Event
     ///End position of the event in file/stream.
     Mark endMark;
     ///Anchor of the event, if any.
-    string _anchor;
+    string anchor;
     ///Tag of the event, if any.
-    string _tag;
+    string tag;
     ///Tag directives, if this is a DocumentStart.
-    TagDirective[] _tagDirectives;
+    TagDirective[] tagDirectives;
     ///Event type.
     EventID id = EventID.invalid;
     ///Style of scalar event, if this is a scalar event.
@@ -77,20 +77,6 @@ struct Event
     ///Get string representation of the token ID.
     @property string idString() const @safe {return to!string(id);}
 
-    auto ref anchor() inout @trusted pure {
-        assert(id != EventID.documentStart, "DocumentStart events cannot have anchors.");
-        return _anchor;
-    }
-
-    auto ref tag() inout @trusted pure {
-        assert(id != EventID.documentStart, "DocumentStart events cannot have tags.");
-        return _tag;
-    }
-
-    auto ref tagDirectives() inout @trusted pure {
-        assert(id == EventID.documentStart, "Only DocumentStart events have tag directives.");
-        return _tagDirectives;
-    }
     void toString(W)(ref W writer) const
     {
         import std.algorithm.iteration : substitute;
